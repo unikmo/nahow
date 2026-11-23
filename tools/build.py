@@ -255,10 +255,12 @@ def _dsg_html():
     return s
 
 
-pages['/impressum/'] = layout('Impressum', 'Impressum und Anbieterkennzeichnung von NAHOW e.V.',
-                              hero_intro('Rechtliches', 'Impressum.', 'Angaben gemäß den gesetzlichen Informationspflichten.') + sec('Anbieter', 'NAHOW e.V.', '<div class="prose narrow">' + _imp_html() + '</div>'), '/impressum/')
-pages['/datenschutz/'] = layout('Datenschutz', 'Datenschutzerklärung von NAHOW e.V.',
-                                hero_intro('Datenschutz', 'Datenschutzerklärung.', 'Informationen zur Verarbeitung personenbezogener Daten.') + sec('Hinweise', 'Datenschutz im Blick', '<div class="prose narrow">' + _dsg_html() + '<h3>III. Informationen zur Datenverarbeitung auf dieser Website</h3><p>Diese Website ist statisch aufgebaut. Sie verwendet keine Cookies, keine Analyse- oder Trackingdienste, keine Nutzerkonten und lädt keine Schriftarten, Karten oder Videos von Drittanbietern. Beim Aufruf verarbeitet der Hostinganbieter technisch notwendige Zugriffsdaten (z. B. IP-Adresse, Datum und Uhrzeit, aufgerufene Seite) in Server-Logdateien, um den Betrieb und die Sicherheit der Website zu gewährleisten (Art. 6 Abs. 1 lit. f DSGVO).</p><p>Wenn Sie das Kontaktformular nutzen, werden Ihr Name, Ihre E-Mail-Adresse und Ihre Nachricht per E-Mail an den Verein übermittelt und ausschließlich zur Bearbeitung Ihrer Anfrage verwendet (Art. 6 Abs. 1 lit. b bzw. f DSGVO). Die Angaben werden nicht auf dem Server gespeichert und nicht an Dritte weitergegeben.</p></div>'), '/datenschutz/')
+def legal_page(kicker, title, body):
+    return f'<section class="section legal"><div class="wrap"><div class="sec-head"><span class="eyebrow">{kicker}</span><h1>{title}</h1></div><div class="prose narrow">{body}</div></div></section>'
+
+
+pages['/impressum/'] = layout('Impressum', 'Impressum und Anbieterkennzeichnung von NAHOW e.V.', legal_page('Impressum', 'NAHOW e.V.', _imp_html()), '/impressum/')
+pages['/datenschutz/'] = layout('Datenschutz', 'Datenschutzerklärung von NAHOW e.V.', legal_page('Datenschutz', 'Datenschutzerklärung', _dsg_html() + '''<h3>III. Informationen zur Datenverarbeitung auf dieser Website</h3><p>Diese Website ist statisch aufgebaut. Sie verwendet keine Cookies, keine Analyse- oder Trackingdienste, keine Nutzerkonten und lädt keine Schriftarten, Karten oder Videos von Drittanbietern. Beim Aufruf verarbeitet der Hostinganbieter technisch notwendige Zugriffsdaten (z. B. IP-Adresse, Datum und Uhrzeit, aufgerufene Seite) in Server-Logdateien, um den Betrieb und die Sicherheit der Website zu gewährleisten (Art. 6 Abs. 1 lit. f DSGVO).</p><p>Wenn Sie das Kontaktformular nutzen, werden Ihr Name, Ihre E-Mail-Adresse und Ihre Nachricht per E-Mail an den Verein übermittelt und ausschließlich zur Bearbeitung Ihrer Anfrage verwendet (Art. 6 Abs. 1 lit. b bzw. f DSGVO). Die Angaben werden nicht auf dem Server gespeichert und nicht an Dritte weitergegeben.</p>'''), '/datenschutz/')
 
 # ───────────────────────────── Einblicke (zuletzt: bekommt alle übrigen Fotos) ─────────────────────────────
 SKIP = ('DSC_0004', 'DSC_0340', 'DSC_0471', 'DSC_0482', 'DSC_0535', 'shield_', 'Footballfield', 'Tafel', 'P1040905',
