@@ -1,13 +1,13 @@
 # NAHOW e.V. — website rebuild
 
-**Status: preview source committed on `preview/website-rebuild`; not deployed.** Existing `nahow.de` remains hosted at HostEurope.
+**Status: live on https://nahow.de since 2026-11-23 (commit 0a054b4 deployed to HostEurope `/public_html`).** Original photographs and report PDFs are included unchanged (see `assets/*/ORIGINALS-MANIFEST.json`).
 
 ## Architecture
 
 - Static German website; no database or Vercel required.
 - GitHub → GitHub Actions → HostEurope via explicit FTPS on port 21.
 - FTPS server: `ftp.nahow.de`; deployment username: `nahow@nahow.de`.
-- HostEurope target path (verify FTP-relative mapping before deployment): `/home/duy6zx6o0x4d/public_html/nahow.de/nahow`.
+- Real web root: `/home/duy6zx6o0x4d/public_html` (cPanel primary domain). Other domains live in subfolders of it: never mirror-delete there. The `.htaccess` is scoped to nahow.de for that reason.
 - Do not commit FTPS credentials. Store them only in repository Actions secrets after authentication is available.
 
 ## Non-negotiable content preservation
@@ -19,4 +19,4 @@
 
 ## Source status
 
-The website source, build and verification scripts are committed to this preview branch. The original photographs and project documents remain unimported. Production deployment is disabled pending secure HostEurope access, full backup, photo/report migration, visual review, and release verification.
+Deployed. Old WordPress files are in the hosting account's cPanel Trash; a zip of the old files is in `/home/duy6zx6o0x4d/application_backups/`. The WordPress database was left in place. Legal review of the Impressum and Datenschutz (section III) by the association is still open.
