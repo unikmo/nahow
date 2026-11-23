@@ -187,9 +187,8 @@ about += sec('Mission und Werte', 'Was uns leitet.', '''<div class="values">
 <div class="reveal"><h3>Bildung &amp; Gesundheit</h3><p>Unsere bisherigen Aktivitäten konzentrierten sich auf die Unterstützung von Bildung und Gesundheit. Wir haben Bildungsprogramme umgesetzt und die Lebensbedingungen vieler Menschen verbessert.</p></div>
 <div class="reveal"><h3>Umweltschutz</h3><p>Nun setzen wir einen neuen Schwerpunkt: Aufforstung, effiziente Kocher und Biogas sollen den Holzverbrauch senken und die Gesundheit der Gemeinschaften verbessern.</p></div>
 <div class="reveal"><h3>Gemeinsam vor Ort</h3><p>Wir arbeiten eng mit den Dorfbewohnern zusammen und entwickeln Lösungen, die zu ihren Bedürfnissen passen und langfristig tragen.</p></div></div>''', 'tint')
-culture = '<div class="strip">' + ''.join(f'<figure class="reveal">{img(n, a, c, zoom=True)}</figure>' for n, a, c in [
-    ('DSC_0684_Enwen-scaled', 'Frau in traditioneller Festkleidung verteilt Geschenke an Kinder', 'pos-r'),
-    ('DSC_0686_Enwen-scaled', 'Frau in traditioneller Festkleidung bei der Verteilung an Kinder', 'pos-r'),
+culture = '<div class="strip">' + ''.join(f'<figure class="reveal{" wide" if c == "wide" else ""}">{img(n, a, c, zoom=True)}</figure>' for n, a, c in [
+    ('DSC_0723_Enwen-scaled', 'Gruppenbild in traditioneller Festkleidung in Enwen', 'wide'),
     ('DSC_0469_Enwen-scaled', 'Lächelnder Mann in traditioneller Kleidung', ''),
     ('DSC_0477_Enwen', 'Traditionelle Kleidung und Kopfbedeckung in Enwen', ''),
 ]) + '</div>'
