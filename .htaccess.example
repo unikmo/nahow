@@ -1,0 +1,15 @@
+# EXAMPLE ONLY. Merge with existing HostEurope .htaccess after inspecting WordPress config.
+# Requires mod_rewrite. Do not overwrite active .htaccess blindly.
+Options -MultiViews
+RewriteEngine On
+RewriteRule ^wp-content/uploads/.*/([^/]+\.pdf)$ /assets/documents/$1 [R=301,L]
+RewriteRule ^(wp-admin/.*|wp-login\.php)$ - [L]
+RewriteRule ^fotos/?$ /einblicke/ [R=301,L]
+RewriteRule ^aktuelle-projekte/?$ /projekte/ [R=301,L]
+RewriteRule ^abgeschlossene-projekte/?$ /projekte/ [R=301,L]
+RewriteRule ^aufforstungsprojekt/?$ /projekte/#umwelt [R=301,L,NE]
+RewriteRule ^projekte/aufforstungsprojekt/?$ /projekte/#umwelt [R=301,L,NE]
+RewriteRule ^team/?$ /ueber-uns/ [R=301,L]
+RewriteRule ^geschichte/?$ /ueber-uns/ [R=301,L]
+RewriteRule ^mission-und-werte/?$ /ueber-uns/ [R=301,L]
+# Keep /blog/ and article permalinks reachable until their content is migrated.
