@@ -217,3 +217,5 @@ p{margin:0 0 1em}
 .strip{grid-template-columns:repeat(3,1fr)}@media(max-width:760px){.strip{grid-template-columns:1fr 1fr}}
 
 .mono-circle{width:120px;height:120px;font-size:40px}.member-photo img{object-position:40% 20%}
+
+.strip{grid-template-columns:repeat(4,1fr)}.strip img.pos-r{object-position:100% 20%}@media(max-width:760px){.strip{grid-template-columns:1fr 1fr}}
