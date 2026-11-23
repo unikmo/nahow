@@ -14,6 +14,9 @@ for f in sorted(SRC.iterdir()):
  if im.width>w:im=im.resize((w,round(im.height*w/im.width)),Image.LANCZOS)
  o=OUT/(f.stem+'.webp');im.save(o,'WEBP',quality=74,method=6)
  meta[f.name]={'file':o.name,'w':im.width,'h':im.height,'bytes':o.stat().st_size}
+ full=Image.open(f).convert('RGB');L=OUT/'lg';L.mkdir(exist_ok=True)
+ if full.width>1800:full=full.resize((1800,round(full.height*1800/full.width)),Image.LANCZOS)
+ full.save(L/(f.stem+'.webp'),'WEBP',quality=80,method=6)
 json.dump(meta,open(OUT/'web-manifest.json','w'),indent=1)
 # header logo: derived from the original logo, original kept in assets/brand
 lg=Image.open(R/'assets/brand/NAHOW-eV-Logo_original.png').convert('RGBA')

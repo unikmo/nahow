@@ -1,86 +1,279 @@
+"""Static site generator for nahow.de (German). Run: python tools/build.py"""
 from pathlib import Path
-import html, json, re
-R=Path(__file__).resolve().parents[1]
-A=R/'assets/images'
-photos=sorted([f for f in A.rglob('*') if f.suffix.lower() in ('.jpg','.jpeg','.png','.webp','.gif') and f.is_file()])
-photo_urls=['/'+p.relative_to(R).as_posix() for p in photos]
-nav=[('Startseite','/'),('Unsere Arbeit','/projekte/'),('Über NAHOW','/ueber-uns/'),('Einblicke','/einblicke/'),('Unterstützen','/unterstuetzen/'),('Kontakt','/kontakt/')]
-import hashlib
-def _v(f):return hashlib.md5((R/f).read_bytes()).hexdigest()[:8]
-CSS='/assets/site.css?v='+_v('assets/site.css')
-def named(n):
- u='/assets/images/'+n
- return photo_urls.index(u) if u in photo_urls else 10**6
-EXCLUDE=('DSC_0004','DSC_0340','DSC_0471','DSC_0482','DSC_0535','shield_','Footballfield','Tafel','P1040905','Kinder1','100_5729','IMG_1241','IMG_1242','Africa-map','Generalanzeiger','althof','vyvian','nahow_image_collage','Nahow_Presse','Spende_Sekundarschule','Nahow_Spenden')
-gallery_urls=None
-WEB=json.loads((R/'assets/web/web-manifest.json').read_text())
-used=set()
-def web(u):
- n=u.rsplit('/',1)[1];m=WEB[n];return '/assets/web/'+m['file'],m['w'],m['h']
-def img(i,alt='',cls='',eager=False):
- u=photo_urls[i];assert u not in used,'image repeated: '+u;used.add(u)
- src,w,h=web(u);lz='fetchpriority="high"' if eager else 'loading="lazy"'
- return f'<img class="{cls}" src="{src}" width="{w}" height="{h}" alt="{html.escape(alt)}" {lz} decoding="async">'
-def card(title,body,url,tag):return f'<a class="work-card" href="{url}"><span class="eyebrow">{tag}</span><h3>{title}</h3><p>{body}</p><span class="arrow">Mehr erfahren <b>↗</b></span></a>'
-def layout(title,desc,content,active='/',canonical=None):
- items=''.join(f'<a href="{url}" class="{"active" if url==active else ""}">{label}</a>' for label,url in nav)
- base=canonical or active
- return f'''<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#15392d"><meta name="description" content="{html.escape(desc,quote=True)}"><link rel="canonical" href="https://nahow.de{base}"><link rel="icon" href="/assets/brand/nahow-logo.png"><link rel="stylesheet" href="{CSS}"><title>{title} | NAHOW e.V.</title></head><body><a href="#inhalt" class="skip">Zum Inhalt springen</a><header class="site-header"><div class="wrap header-inner"><a class="brand" href="/" aria-label="NAHOW e.V. Startseite"><img class="brand-logo" src="/assets/brand/nahow-logo.png" width="193" height="112" alt="nahow"><span class="brand-copy">NAHOW <small>e.V. · Gemeinsam vor Ort</small></span></a><button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="main-nav">Menü <span>☰</span></button><nav class="nav" id="main-nav" aria-label="Hauptnavigation">{items}</nav></div></header><main id="inhalt">{content}</main><footer class="footer"><div class="wrap"><div class="footer-top"><div><span class="footer-brand">NAHOW e.V.</span><p>Engagement für Bildung, Lebensgrundlagen und Umwelt — gemeinsam mit Menschen in Kamerun.</p></div><div><h4>Entdecken</h4><a href="/projekte/">Projekte</a><a href="/berichte/">Berichte</a><a href="/einblicke/">Fotos</a></div><div><h4>Verbindung</h4><a href="/kontakt/">Kontaktformular</a><a href="/unterstuetzen/">Spenden</a></div></div><div class="footer-bottom"><span>© NAHOW e.V.</span><div><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></div></div></div></footer><script src="/assets/site.js?v={_v('assets/site.js')}" defer></script></body></html>'''
-def intro(kicker,title,desc):return f'<section class="page-intro"><div class="wrap"><span class="eyebrow">{kicker}</span><h1>{title}</h1><p class="lead">{desc}</p></div></section>'
-def section(h,t,body):return f'<section class="section"><div class="wrap"><div class="section-heading"><span class="eyebrow">{h}</span><h2>{t}</h2></div>{body}</div></section>'
-pages={}
-hero=f'''<section class="hero"><div class="wrap hero-grid"><div class="hero-copy"><span class="eyebrow light">Gemeinsam etwas bewegen · Kamerun</span><h1>Veränderung beginnt <em>vor Ort.</em></h1><p>Seit vielen Jahren engagiert sich NAHOW e.V. gemeinsam mit lokalen Gemeinschaften für Bildung, bessere Lebensgrundlagen und eine nachhaltigere Zukunft.</p><div class="actions"><a class="btn btn-light" href="/projekte/">Unsere Arbeit entdecken <span>↗</span></a><a class="text-link" href="/ueber-uns/">Unsere Geschichte <span>↗</span></a></div></div><div class="hero-media">{img(named('DSC_0857_Enwen-scaled.png'),'Lachendes Kind in Enwen, Kamerun',eager=True)}<div class="hero-index">01 / Projekte. Menschen. Perspektiven.</div></div></div><div class="hero-bottom wrap"><span>Ein Verein. Eine gemeinsame Verantwortung.</span><span>Enwen · Kamerun</span></div></section>'''
-focus=section('Was uns antreibt','Aus konkreten Bedürfnissen entstehen nachhaltige Lösungen.',f'<div class="cards">{card("Bildung ermöglichen","Schulen, berufliche Ausbildung und praktische Perspektiven für junge Menschen.","/projekte/#bildung","01 / BILDUNG")}{card("Umwelt schützen","Aufforstung und ressourcenschonende Kochtechnologien als langfristiges Ziel.","/projekte/#umwelt","02 / UMWELT")}{card("Gemeinschaften stärken","Zusammenarbeit mit lokalen Partnern bei Projekten, die vor Ort gebraucht werden.","/projekte/#gemeinschaft","03 / GEMEINSCHAFT")}</div>')
-history=f'''<section class="story-band"><div class="wrap split"><div class="story-photo">{img(named('DSC_0329_Enwen-scaled.png'),'Schulkinder in blauen Uniformen in Enwen')}</div><div class="story-text"><span class="eyebrow">Unsere Wurzeln</span><h2>Verbunden mit Enwen. Engagiert für morgen.</h2><p>Die Geschichte von NAHOW begann mit dem Wunsch, gemeinsam mit den Menschen in Enwen konkrete Verbesserungen zu ermöglichen. Von einer Dorfschule und beruflicher Ausbildung bis zu heutigen Umweltzielen: Unsere Arbeit entwickelt sich mit den Bedürfnissen vor Ort.</p><a class="inline-link" href="/ueber-uns/">Mehr über NAHOW <span>↗</span></a></div></div></section>'''
-report=section('Transparenz','Nicht nur Ziele. Auch die bisherige Arbeit.', '<div class="report-strip"><p>Projektberichte und Dokumentation gehören zu unserer Geschichte. Entdecken Sie abgeschlossene Projekte und vorhandene Berichte.</p><a class="btn btn-outline" href="/berichte/">Zu den Berichten ↗</a></div>')
-cta='<section class="cta"><div class="wrap cta-flex"><div><span class="eyebrow light">Gemeinsam weiterkommen</span><h2>Unterstützung, die vor Ort ankommt.</h2><p>Entdecken Sie Möglichkeiten, unsere Arbeit zu begleiten.</p></div><a class="btn btn-light" href="/unterstuetzen/">NAHOW unterstützen ↗</a></div></section>'
-pages['/']=layout('Gemeinsam vor Ort','NAHOW e.V. engagiert sich in Kamerun für Bildung, Umwelt und Lebensgrundlagen.',hero+focus+history+report+cta)
-work=intro('Unsere Arbeit','Menschen und Möglichkeiten.','Einblicke in frühere Projekte sowie die Schwerpunkte, die NAHOW heute verfolgt.')
-work+='''<section class="section"><div class="wrap"><div class="project-row" id="bildung"><div><span class="eyebrow">Bildung · Abgeschlossene Projekte</span><h2>Eine Dorfschule mit Zukunft.</h2><p>NAHOW unterstützte den Wiederaufbau einer Dorfschule und die Herrichtung eines Fußballfeldes. Die Einweihung fand im August 2010 statt.</p><a class="inline-link" href="/berichte/">Projektberichte ansehen ↗</a></div>'''+img(named('new-field_Enwen.png'),'Schule und Fußballfeld in Enwen')+'''</div><div class="project-row reverse" id="gemeinschaft"><div><span class="eyebrow">Berufliche Perspektiven</span><h2>Ausbildung, die Möglichkeiten schafft.</h2><p>Ein Ausbildungszentrum für Schneiderei und Tischlerei gehörte zu den dokumentierten Initiativen. Ergänzend wurden Themen wie Ernährung und praktische Erwerbsmöglichkeiten behandelt.</p><a class="inline-link" href="/berichte/">Projektberichte ansehen ↗</a></div>'''+img(named('DSC_0293_Enwen-scaled.png'),'Neu gefertigte Schulbänke in Enwen ')+'''</div><div class="project-row" id="umwelt"><div><span class="eyebrow">Umwelt · Ziele</span><h2>Aufforstung und effiziente Energienutzung.</h2><p>Das Ziel, eine Million Bäume zu pflanzen, ist ein Vorhaben — keine Angabe bereits gepflanzter Bäume. Daneben stehen effiziente Kochtechnologien und Biogas im Fokus.</p><a class="inline-link" href="/unterstuetzen/">Engagement unterstützen ↗</a></div>'''+img(named('Ausblick_aus_dem_Klassenzimmer_Enwen-e1714048885483.png'),'Bananenpflanzen in Enwen, Blick aus dem Klassenzimmer ')+'''</div></div></section>'''+cta
-pages['/projekte/']=layout('Unsere Projekte','Schule, Ausbildung, Aufforstung und energieeffizientes Kochen: die Arbeit von NAHOW e.V.',work,'/projekte/')
-about=intro('Über uns','Verwurzelt in Enwen.','NAHOW e.V. verbindet langfristiges Engagement mit Zusammenarbeit vor Ort.')
-about+=section('Unsere Geschichte','Aus einer Begegnung wurde eine Aufgabe.','<div class="narrow prose"><p>Der Verein entstand aus dem Wunsch heraus, Menschen in der Region Enwen in Kamerun bei konkreten Herausforderungen zu unterstützen. Bildung und Gesundheitsversorgung gehörten zu den frühen Tätigkeitsfeldern.</p><p>Heute gehören Aufforstung, effizientere Kochmethoden und nachhaltige Energienutzung zu den erklärten Zielen. Vergangene Erfolge, aktuelle Projekte und zukünftige Vorhaben werden dabei bewusst unterschieden.</p></div>')
-about+='<section class="story-band"><div class="wrap"><div class="story-photo wide">'+img(named('DSC_0554_Enwen-scaled.png'),'Das NAHOW-Team nach einem Fußballspiel in Enwen')+'</div></div></section>'
-about+=section('Menschen hinter NAHOW','Das Team','<div class="team"><article><h3>Tichi Mbanwie</h3><p>Vorsitzender</p></article><article><h3>Michael Althof</h3><p>Kassenwart</p></article><article><h3>Vyvian Mbanwie</h3><p>Koordinator USA</p></article></div>')+cta
-pages['/ueber-uns/']=layout('Über NAHOW','Die Geschichte, die Menschen und die Ziele von NAHOW e.V.',about,'/ueber-uns/')
-gallery_urls=[u for u in photo_urls if u not in used and not any(x in u for x in EXCLUDE)]
-photos_markup=''.join('<figure class="photo">'+img(photo_urls.index(u),'Foto aus Enwen, Kamerun')+'</figure>' for u in gallery_urls)
-if not photos_markup:photos_markup='<div class="archive-message"><h2>Unser Bildarchiv bleibt original.</h2><p>Für diese Vorschau wurden keine fremden Bilder eingesetzt. Originale aus dem bestehenden WordPress-Medienarchiv lassen sich unverändert hier übernehmen. Bis dahin bleibt die bestehende Fotogalerie auf der aktuellen Website erreichbar.</p><a class="inline-link" href="https://nahow.de/fotos/">Bisherige Fotogalerie ansehen ↗</a></div>'
-gallery=intro('Dokumentation','Einblicke aus Enwen.','Momente aus den Projekten und dem Alltag vor Ort.')+f'<section class="section"><div class="wrap"><div class="gallery">{photos_markup}</div></div></section>'
-pages['/einblicke/']=layout('Einblicke und Fotos','Fotos aus den Projekten von NAHOW e.V. in Enwen, Kamerun.',gallery,'/einblicke/')
-reports=intro('Wissen und Transparenz','Unsere Projektberichte.','Berichte und öffentliche Dokumentation machen die Arbeit von NAHOW nachvollziehbar.')+section('Archiv','Veröffentlichte Unterlagen','<div class="report-list"><a href="/assets/documents/projektbericht-solarzentrum.pdf" target="_blank" rel="noopener"><strong>Projektbericht Solarzentrum</strong><span>PDF ansehen ↗</span></a><a href="/assets/documents/projektendbericht_ausbildungszentrum.pdf" target="_blank" rel="noopener"><strong>Projektendbericht Ausbildungszentrum</strong><span>PDF ansehen ↗</span></a><a href="/assets/documents/projektendbericht_schule.pdf" target="_blank" rel="noopener"><strong>Projektendbericht Schule</strong><span>PDF ansehen ↗</span></a><a href="/assets/documents/kamerunreisebericht-dec.-2013.pdf" target="_blank" rel="noopener"><strong>Kamerun-Reisebericht, Dezember 2013</strong><span>PDF ansehen ↗</span></a><a href="/assets/documents/Statusbericht-Nahow-2018.pdf" target="_blank" rel="noopener"><strong>Statusbericht NAHOW 2018</strong><span>PDF ansehen ↗</span></a><a href="/assets/documents/Report-on-Enwai-Health-Centre.pdf" target="_blank" rel="noopener"><strong>Report on Enwai Health Centre (englisch)</strong><span>PDF ansehen ↗</span></a><a href="/assets/documents/U.S.-Department-of-State.pdf" target="_blank" rel="noopener"><strong>U.S. Department of State (englisch)</strong><span>PDF ansehen ↗</span></a><a href="/assets/documents/Pressemitteilung_Lichtblicke_Unterschleisheim.pdf" target="_blank" rel="noopener"><strong>Pressemitteilung Lichtblicke Unterschleißheim</strong><span>PDF ansehen ↗</span></a><a href="/assets/documents/Hessnatur-Blog-12_07_05.pdf" target="_blank" rel="noopener"><strong>Hessnatur-Blog (Artikel)</strong><span>PDF ansehen ↗</span></a></div>')
-pages['/berichte/']=layout('Projektberichte','Öffentliche Projektberichte und Dokumente von NAHOW e.V.',reports, '/berichte/')
-support=intro('Unterstützen','Gemeinsam mehr möglich machen.','Ob Spende, Partnerschaft oder ehrenamtliches Engagement — jede Form der Unterstützung hilft, Ideen weiterzuentwickeln.')+section('Spenden','Direkt an NAHOW e.V.','''<div class="donate-grid"><div class="bank"><span class="eyebrow">Banküberweisung</span><h3>Spendenkonto</h3><dl><dt>Kontoinhaber</dt><dd>NAHOW e.V.</dd><dt>IBAN</dt><dd class="mono">DE65 7001 0080 0849 5288 05</dd><dt>BIC</dt><dd>PBNKDEFF</dd><dt>Bank</dt><dd>Postbank</dd></dl></div><div class="donate-note"><h3>Andere Wege, sich einzubringen.</h3><p>Sie möchten NAHOW mit Know-how, Netzwerken oder einer Projektpartnerschaft unterstützen? Schreiben Sie uns über das Kontaktformular.</p><a class="btn btn-green" href="/kontakt/">Kontakt aufnehmen ↗</a></div></div>''')
-pages['/unterstuetzen/']=layout('Unterstützen und spenden','NAHOW e.V. unterstützen: Spendenkonto, Partnerschaft und Engagement.',support,'/unterstuetzen/')
-contact=intro('Kontakt','Schreiben Sie uns.','Für Fragen zu NAHOW, Projektideen, Unterstützung oder Presseanfragen.')+section('Kontaktformular','Ihre Nachricht an NAHOW e.V.','<div class="form-wrap"><form class="contact-form" action="/kontakt/senden.php" method="post"><div class="field"><label for="f-name">Name</label><input id="f-name" name="name" type="text" required maxlength="120" autocomplete="name"></div><div class="field"><label for="f-mail">Ihre E-Mail-Adresse</label><input id="f-mail" name="email" type="email" required maxlength="200" autocomplete="email"></div><div class="field"><label for="f-msg">Nachricht</label><textarea id="f-msg" name="message" rows="8" required maxlength="5000"></textarea></div><div class="hp" aria-hidden="true"><label>Bitte leer lassen<input name="website" type="text" tabindex="-1" autocomplete="off"></label></div><input type="hidden" name="ts" value="" id="f-ts"><label class="check"><input type="checkbox" name="consent" value="1" required> <span>Ich habe die <a href="/datenschutz/">Datenschutzerklärung</a> gelesen und bin damit einverstanden, dass meine Angaben zur Bearbeitung der Anfrage per E-Mail an NAHOW e.V. übermittelt werden.</span></label><button class="btn btn-green" type="submit">Nachricht senden ↗</button></form></div>')
-pages['/kontakt/danke/']=layout('Nachricht gesendet','Ihre Nachricht an NAHOW e.V. wurde gesendet.',intro('Kontakt','Vielen Dank.','Ihre Nachricht wurde gesendet. Wir melden uns so bald wie möglich bei Ihnen.')+'<section class="section"><div class="wrap"><a class="btn btn-green" href="/">Zur Startseite ↗</a></div></section>','/kontakt/')
-pages['/kontakt/fehler/']=layout('Nachricht nicht gesendet','Die Nachricht konnte nicht gesendet werden.',intro('Kontakt','Das hat leider nicht geklappt.','Bitte prüfen Sie Ihre Angaben und versuchen Sie es erneut. Falls das Problem bleibt, versuchen Sie es später noch einmal.')+'<section class="section"><div class="wrap"><a class="btn btn-green" href="/kontakt/">Zurück zum Formular ↗</a></div></section>','/kontakt/')
-pages['/kontakt/']=layout('Kontakt','Kontaktieren Sie NAHOW e.V. in Siegburg.',contact,'/kontakt/')
+import html, json, hashlib
 import html as _h
-def _paras(path,start,stop):
- L=[l.strip() for l in (R/path).read_text(encoding='utf-8').split('\n')]
- return L[start:stop]
+
+R = Path(__file__).resolve().parents[1]
+E = html.escape
+WEB = json.loads((R / 'assets/web/web-manifest.json').read_text())
+used = set()
+
+
+def _v(f):
+    return hashlib.md5((R / f).read_bytes()).hexdigest()[:8]
+
+
+CSS = '/assets/site.css?v=' + _v('assets/site.css')
+JS = '/assets/site.js?v=' + _v('assets/site.js')
+
+
+def img(name, alt, cls='', eager=False, zoom=False):
+    """Optimised web copy of an unchanged original. Every photo may be used once on the whole site."""
+    key = next((name + e for e in ('.png', '.jpg') if name + e in WEB), name)
+    assert key in WEB, 'unknown image ' + name
+    assert key not in used, 'image repeated: ' + key
+    used.add(key)
+    m = WEB[key]
+    stem = m['file'][:-5]
+    attrs = 'fetchpriority="high"' if eager else 'loading="lazy"'
+    z = f' data-full="/assets/web/lg/{stem}.webp"' if zoom else ''
+    return (f'<img class="{cls}" src="/assets/web/{m["file"]}" width="{m["w"]}" height="{m["h"]}" '
+            f'alt="{E(alt)}" {attrs} decoding="async"{z}>')
+
+
+def doc(name):
+    f = R / 'assets/documents' / name
+    kb = f.stat().st_size / 1024
+    return f'/assets/documents/{name}', (f'{kb/1024:.1f} MB' if kb > 1024 else f'{kb:.0f} KB')
+
+
+NAV = [('Startseite', '/'), ('Projekte', '/projekte/'), ('Über uns', '/ueber-uns/'),
+       ('Berichte', '/berichte/'), ('Einblicke', '/einblicke/'), ('Kontakt', '/kontakt/')]
+
+
+def layout(title, desc, content, active='/'):
+    items = ''.join(f'<a href="{u}"{" class=active aria-current=page" if u == active else ""}>{l}</a>' for l, u in NAV)
+    return f'''<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#143a2e"><meta name="description" content="{E(desc, quote=True)}"><link rel="canonical" href="https://nahow.de{active}"><link rel="icon" href="/assets/brand/nahow-logo.png"><link rel="stylesheet" href="{CSS}"><title>{title} | NAHOW e.V.</title><script>document.documentElement.className="js"</script></head><body><a href="#inhalt" class="skip">Zum Inhalt springen</a><header class="site-header"><div class="bar"><a class="brand" href="/" aria-label="NAHOW e.V. Startseite"><img class="brand-logo" src="/assets/brand/nahow-logo.png" width="193" height="112" alt=""><span class="brand-copy"><strong>NAHOW e.V.</strong><small>Gemeinsam vor Ort</small></span></a><button class="menu-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span></button><nav class="nav" id="main-nav" aria-label="Hauptnavigation">{items}<a class="nav-cta" href="/unterstuetzen/">Spenden</a></nav></div></header><main id="inhalt">{content}</main><footer class="footer"><div class="foot-grid"><div class="foot-brand"><img src="/assets/brand/nahow-logo.png" width="193" height="112" alt="nahow" loading="lazy"><p>Seit 2008 gemeinsam mit den Menschen in Enwen, Kamerun: für Bildung, Gesundheit, Lebensgrundlagen und Umwelt.</p></div><div><h4>Entdecken</h4><a href="/projekte/">Projekte</a><a href="/ueber-uns/">Über uns</a><a href="/berichte/">Berichte</a><a href="/einblicke/">Einblicke</a></div><div><h4>Mitmachen</h4><a href="/unterstuetzen/">Spenden</a><a href="/ueber-uns/#partner">Partnerschaften</a><a href="/kontakt/">Kontaktformular</a></div><div><h4>Rechtliches</h4><a href="/impressum/">Impressum</a><a href="/datenschutz/">Datenschutz</a></div></div><div class="foot-bottom"><span>© NAHOW e.V. · Eingetragener Verein, Siegburg</span></div></footer><dialog class="lightbox" aria-label="Bildansicht"><button class="lb-close" aria-label="Schließen">×</button><img alt=""></dialog><script src="{JS}" defer></script></body></html>'''
+
+
+def hero_intro(kicker, title, lead):
+    return f'<section class="page-head"><div class="wrap"><span class="eyebrow">{kicker}</span><h1>{title}</h1><p class="lead">{lead}</p></div></section>'
+
+
+def sec(kicker, title, body, cls='', lead='', id_=''):
+    k = f'<span class="eyebrow">{kicker}</span>' if kicker else ''
+    t = f'<h2>{title}</h2>' if title else ''
+    l = f'<p class="lead">{lead}</p>' if lead else ''
+    i = f' id="{id_}"' if id_ else ''
+    return f'<section{i} class="section {cls}"><div class="wrap"><div class="sec-head reveal">{k}{t}{l}</div>{body}</div></section>'
+
+
+def arrow_link(text, href, cls='link-arrow'):
+    return f'<a class="{cls}" href="{href}">{text}<span aria-hidden="true">→</span></a>'
+
+
+pages = {}
+
+# ───────────────────────────── Startseite ─────────────────────────────
+hero = f'''<section class="hero"><div class="hero-text"><span class="eyebrow light">Enwen · Nordwest-Kamerun</span><h1>Veränderung beginnt vor Ort.</h1><p>Seit 2008 engagiert sich NAHOW e.V. gemeinsam mit den Menschen in Enwen für Bildung, Gesundheit, bessere Lebensgrundlagen und eine nachhaltigere Zukunft.</p><div class="actions"><a class="btn btn-crimson" href="/projekte/">Unsere Projekte</a><a class="btn btn-ghost" href="/unterstuetzen/">Spenden</a></div></div><div class="hero-photo">{img("DSC_0857_Enwen-scaled", "Lachendes Kind in Enwen, Kamerun", eager=True)}</div></section>'''
+
+facts = '''<section class="facts"><div class="wrap facts-grid">
+<div><b>2008</b><span>Gründung des Vereins</span></div>
+<div><b>14.08.2010</b><span>Einweihung der Grundschule in Enwen</span></div>
+<div><b>ca. 280</b><span>Kinder nutzen seit 2010 die neuen Schulgebäude</span></div>
+<div><b>1.000.000</b><span>Bäume sind unser Ziel (ein Vorhaben, keine Angabe gepflanzter Bäume)</span></div>
+</div></section>'''
+
+pillars = sec('Was uns antreibt', 'Aus konkreten Bedürfnissen entstehen tragfähige Lösungen.', '''<div class="pillars">
+<a class="pillar reveal" href="/projekte/#bildung"><span class="num">01</span><h3>Bildung</h3><p>Eine wiederaufgebaute Grundschule, ein Ausbildungszentrum für Schneiderinnen und Tischler, IT-Ausbildung für Abiturienten.</p><span class="more">Mehr erfahren →</span></a>
+<a class="pillar reveal" href="/projekte/#gesundheit"><span class="num">02</span><h3>Gesundheit &amp; Lebensgrundlagen</h3><p>Solarlampen für rund 200 Haushalte, Toiletten, Unterstützung der Gesundheitsstation und humanitäre Hilfe.</p><span class="more">Mehr erfahren →</span></a>
+<a class="pillar reveal" href="/projekte/#umwelt"><span class="num">03</span><h3>Umwelt</h3><p>Aufforstung, effiziente Kocher und Biogas: weniger Brennholz, bessere Luft, langfristig tragfähige Perspektiven.</p><span class="more">Mehr erfahren →</span></a>
+</div>''', 'tint')
+
+story = f'''<section class="section"><div class="wrap split"><div class="split-photo reveal">{img("DSC_0329_Enwen-scaled", "Schulkinder in blauen Uniformen in Enwen")}</div><div class="split-text reveal"><span class="eyebrow">Unsere Wurzeln</span><h2>Verbunden mit Enwen.</h2><p>Die Idee zu NAHOW entstand aus einer Reise nach Kamerun, in das Dorf Enwen. Dort sah unser Gründer Tichi Mbanwie aus erster Hand, wie sehr es an Bildung fehlte. Gemeinsam mit den Dorfbewohnern begann er, Lösungen zu entwickeln, die zu den Bedürfnissen vor Ort passen.</p><p>Aus der ersten Schule wurde ein Verein, aus einem Verein ein Netzwerk von Unterstützern, die Projekte in den Bereichen Bildung, Gesundheit und Umwelt möglich machen.</p>{arrow_link("Mehr über NAHOW", "/ueber-uns/")}</div></div></section>'''
+
+timeline_items = [
+    ('2008', 'Vereinsgründung', 'Im September 2008 wird NAHOW e.V. gegründet und beginnt, Spenden für eine Schule in Enwen zu sammeln.'),
+    ('2010', 'Grundschule eingeweiht', 'Am 14. August 2010 wird die wiederaufgebaute Grundschule übergeben, dazu das Fußballfeld mit einem Freundschaftsspiel.'),
+    ('2012', 'Ausbildungszentrum', 'Ein Zentrum für junge Schneiderinnen und Tischler eröffnet Perspektiven nach der Grundschule.'),
+    ('2013', 'Solarstrom für Enwen', 'Solarlampensets ersetzen Kerosinlampen in Haushalten, verbunden mit dem Bau von Toiletten.'),
+    ('2016–17', 'Gesundheit', 'Schultoiletten, Unterstützung der Gesundheitsstation und eine Bedarfsanalyse für das Health Centre.'),
+    ('2018', 'Humanitäre Hilfe', 'Wegen der Krise in der Region liegt der Schwerpunkt auf akuter Hilfe für Familien.'),
+    ('Heute', 'Aufforstung &amp; IT-Ausbildung', 'Das 1.000.000-Bäume-Projekt, effiziente Kocher und IT-Ausbildung für Abiturienten.'),
+]
+timeline = '<ol class="timeline">' + ''.join(
+    f'<li class="reveal"><span class="t-year">{y}</span><div><h3>{t}</h3><p>{d}</p></div></li>' for y, t, d in timeline_items) + '</ol>'
+history = sec('Unser Weg', 'Von der ersten Schule zur Aufforstung.', timeline, 'tint', 'Die wichtigsten Stationen, belegt durch unsere Berichte.')
+
+reports_teaser = sec('Transparenz', 'Nachvollziehbar, was mit Spenden geschieht.', f'''<div class="report-strip reveal"><p>Zu unseren großen Projekten gibt es ausführliche Abschlussberichte mit Chronik, Kosten und Ergebnissen. Sie stehen öffentlich als PDF zur Verfügung.</p><div class="strip-actions">{arrow_link("Alle Berichte ansehen", "/berichte/")}</div></div>''')
+
+cta = '''<section class="cta"><div class="wrap cta-flex"><div><h2>Unterstützung, die vor Ort ankommt.</h2><p>Ob Spende, Partnerschaft oder Engagement: jeder Beitrag hilft, die Arbeit in Enwen weiterzuführen.</p></div><a class="btn btn-light" href="/unterstuetzen/">NAHOW unterstützen</a></div></section>'''
+
+pages['/'] = layout('Gemeinsam vor Ort', 'NAHOW e.V. engagiert sich seit 2008 in Enwen, Kamerun, für Bildung, Gesundheit, Lebensgrundlagen und Umwelt.',
+                    hero + facts + pillars + story + history + reports_teaser + cta, '/')
+
+# ───────────────────────────── Projekte ─────────────────────────────
+
+
+def chips(items):
+    return '<ul class="chips">' + ''.join(f'<li><b>{a}</b> {b}</li>' for a, b in items) + '</ul>'
+
+
+def project(id_, status, year, title, text, chip_items, pdf=None, photo=None, reverse=False, plain=''):
+    badge = f'<span class="badge {"live" if status == "Laufend" else ""}">{status}</span>'
+    pdfl = ''
+    if pdf:
+        href, size = doc(pdf[0])
+        pdfl = f'<a class="link-arrow" href="{href}" target="_blank" rel="noopener">{pdf[1]} <small>(PDF, {size})</small><span aria-hidden="true">↗</span></a>'
+    media = f'<div class="p-photo">{photo}</div>' if photo else f'<div class="p-photo p-plain"><span>{plain or year}</span></div>'
+    return (f'<article class="project{" reverse" if reverse else ""} reveal" id="{id_}">{media}<div class="p-body"><div class="p-meta">{badge}<span>{year}</span></div>'
+            f'<h3>{title}</h3>{text}{chips(chip_items) if chip_items else ""}{pdfl}</div></article>')
+
+
+current = (
+    project('umwelt', 'Laufend', 'Heute', 'Das 1.000.000-Bäume-Projekt',
+            '<p>Unser Ziel ist es, in und um Enwen eine Million Bäume zu pflanzen. Das ist ein Vorhaben, keine Angabe bereits gepflanzter Bäume. Aufforstung schützt die Umwelt und stärkt die Lebensgrundlagen der Menschen.</p><p>Zwei weitere Schwerpunkte ergänzen das Projekt: <b>effiziente Kocher</b>, die den Holzverbrauch senken und die Gesundheit schützen, sowie <b>Biogas</b> aus organischen Abfällen als nachhaltige Energiequelle.</p>',
+            [('Ziel', '1.000.000 Bäume'), ('Schwerpunkte', 'Aufforstung · Kocher · Biogas')],
+            photo=img('DSC_0249_Enwen-scaled', 'Grüne Hügel bei Enwen, Kamerun'))
+    + project('it', 'Laufend', 'Heute', 'IT-Ausbildung für Abiturienten',
+              '<p>Mit einer IT-Ausbildung möchten wir jungen Menschen mit Abitur zusätzliche berufliche Perspektiven eröffnen. Möchten Sie das Projekt unterstützen oder mehr erfahren? Schreiben Sie uns über das Kontaktformular.</p>',
+              [], photo=None, reverse=True, plain='IT'))
+
+done = (
+    project('bildung', 'Abgeschlossen', '2008–2010', 'Eine Grundschule für Enwen',
+            '<p>Die staatliche Grundschule in Enwen bestand aus einem einzigen Schulraum, mehrere Behelfsgebäude waren eingestürzt oder einsturzgefährdet. Gemeinsam mit den Dorfbewohnern baute NAHOW Klassenzimmer und Büros neu auf.</p><p>Am 14. August 2010 wurde die Schule feierlich übergeben. Das Fußballfeld davor stiftete Michael Althof; es trägt seinen Namen: „The Michael Althof Football Field“.</p>',
+            [('Kosten', '26.475,09 €'), ('Einweihung', '14.08.2010'), ('Kinder', 'ca. 280')],
+            ('projektendbericht_schule.pdf', 'Projektendbericht Schule'),
+            img('new-field_Enwen', 'Die Schule in Enwen mit dem neu hergerichteten Fußballfeld'))
+    + project('ausbildung', 'Abgeschlossen', '2012', 'Ausbildungszentrum für Schneiderinnen und Tischler',
+              '<p>Jährlich schließen rund 50 Kinder die Grundschule in Enwen ab, doch weiterführende Schulen sind weit entfernt und unbezahlbar. Das Ausbildungszentrum gibt jungen Menschen, besonders Mädchen, eine berufliche Perspektive.</p><p>Ergänzend gibt es Ernährungsberatung und Aufklärung. Als nächster Schritt war geplant, Kochsäcke sowie Schul- und Ausbildungsuniformen herzustellen, damit Absolventinnen eine Chance auf Beschäftigung haben.</p>',
+              [('Kosten', '36.910,87 €'), ('Bericht', '05.05.2012')],
+              ('projektendbericht_ausbildungszentrum.pdf', 'Projektendbericht Ausbildungszentrum'),
+              img('DSC_0293_Enwen-scaled', 'Neu gefertigte Schulbänke im Ausbildungszentrum'), reverse=True)
+    + project('solar', 'Abgeschlossen', '2012–2013', 'Solarstrom für Enwen',
+              '<p>In den rund 200 Haushalten Enwens wurde abends mit Kerosinlampen gearbeitet. Solarlampensets sorgen für sicheres, sauberes Licht. Wer ein Set erhielt, baute im Gegenzug eine Toilette, denn über 80 % der Haushalte hatten bisher keine.</p>',
+              [('Kosten', '35.013,57 €'), ('Haushalte', 'ca. 200')],
+              ('projektbericht-solarzentrum.pdf', 'Projektendbericht Solarstrom'),
+              img('DSC_0239_Enwen', 'Kinder in Schuluniform in Enwen'))
+    + project('gesundheit', 'Abgeschlossen', '2016–2017', 'Schultoiletten und Gesundheitsstation',
+              '<p>2016 verbesserte NAHOW die Schultoiletten und unterstützte die örtliche Gesundheitsstation. Eine Bedarfsanalyse von 2017 zeigt, was fehlt: Das Health Centre betreut mindestens 60 Patientinnen und Patienten im Monat, hat aber nur eine Hilfskraft und keinen festen Arzt.</p>',
+              [('Bedarfsanalyse', '2017')],
+              ('Report-on-Enwai-Health-Centre.pdf', 'Need assessment (englisch)'),
+              img('IMG_8277_Enwen', 'Kinder und Besucherin in Enwen'), reverse=True)
+    + project('hilfe', 'Abgeschlossen', '2017–2018', 'Humanitäre Hilfe',
+              '<p>Mit Partnerorganisationen verteilte NAHOW wiederverwendbare Hygieneartikel an Frauen und Mädchen sowie Betten und Medikamente an Familien und spendete Schulbücher und Tafeln.</p>',
+              [], ('Statusbericht-Nahow-2018.pdf', 'Statusbericht 2018'),
+              img('DSC_0544_Enwen-scaled', 'Kinder in Enwen'))
+)
+
+situation = '''<aside class="notice reveal"><h3>Aktuelle Lage in der Region</h3><p>Nach unserem Statusbericht vom Februar 2018 sind Schulen im englischsprachigen Teil Kameruns seit Oktober 2016 weitgehend geschlossen. Schule und Ausbildungszentrum in Enwen blieben damals bis auf Weiteres geschlossen; NAHOW konzentrierte sich auf humanitäre Hilfe. Mehr dazu im Bericht.</p></aside>'''
+
+projects = (hero_intro('Unsere Arbeit', 'Projekte in Enwen.', 'Von der ersten Schule bis zur Aufforstung: Das haben wir gemeinsam mit den Menschen vor Ort erreicht, und das haben wir vor.')
+            + '<nav class="subnav" aria-label="Projektbereiche"><div class="wrap"><a href="#laufend">Laufende Projekte</a><a href="#abgeschlossen">Abgeschlossene Projekte</a><a href="/berichte/">Berichte</a></div></nav>'
+            + sec('Aktuell', 'Laufende Projekte', current, id_='laufend')
+            + sec('Rückblick', 'Abgeschlossene Projekte', done + situation, 'tint', id_='abgeschlossen')
+            + cta)
+pages['/projekte/'] = layout('Unsere Projekte', 'Projekte von NAHOW e.V. in Enwen, Kamerun: Grundschule, Ausbildungszentrum, Solarstrom, Gesundheit und Aufforstung.', projects, '/projekte/')
+
+# ───────────────────────────── Über uns ─────────────────────────────
+team = '<div class="team">' + ''.join(
+    f'<article class="member reveal"><span class="mono-circle">{i}</span><h3>{n}</h3><p>{r}</p></article>' for i, n, r in
+    [('TM', 'Tichi Mbanwie', 'Vorsitzender'), ('MA', 'Michael Althof', 'Kassenwart'), ('VM', 'Vyvian Mbanwie', 'Koordinator USA')]) + '</div>'
+
+press = '<div class="press">' + ''.join(
+    f'<figure class="reveal">{img(n, a, zoom=True)}<figcaption>{c}</figcaption></figure>' for n, a, c in [
+        ('Generalanzeiger-Bonn-002_Enwen', 'Zeitungsartikel: Dem Heimatdorf etwas zurückgeben', 'General-Anzeiger Bonn: „Dem Heimatdorf etwas zurückgeben“'),
+        ('Nahow_Presse_Generalanzeiger_Bonn', 'Zeitungsartikel: Die neue Sporthalle wird schon genutzt', 'General-Anzeiger Bonn: „Die neue Sporthalle wird schon genutzt“'),
+        ('Nahow_Presse_Blickpunkt_Schaufenster', 'Zeitungsartikel: Endlich Licht im Haus', 'Blickpunkt Schaufenster: „Endlich Licht im Haus“'),
+    ]) + '</div>'
+
+about = hero_intro('Über uns', 'Verwurzelt in Enwen.', 'NAHOW e.V. verbindet langfristiges Engagement mit der Zusammenarbeit vor Ort.')
+about += f'<section class="banner">{img("DSC_0554_Enwen-scaled", "Das NAHOW-Team nach einem Fußballspiel in Enwen")}</section>'
+about += sec('Geschichte', 'Aus einer Reise wurde eine Aufgabe.', '''<div class="prose two-col reveal"><p>Die Geschichte von NAHOW begann mit einer einfachen Idee und dem Wunsch, in benachteiligten Gemeinschaften etwas zu bewegen. Unser Gründer Tichi Mbanwie wollte Menschen helfen, ein besseres Leben zu führen und dabei die Umwelt zu schützen.</p><p>Die Inspiration kam auf einer Reise nach Kamerun, in das Dorf Enwen. Dort sah er aus erster Hand die Herausforderungen der Gemeinschaft: Armut, mangelnde Bildung und Umweltprobleme.</p><p>Im September 2008 wurde der Verein gegründet. Im Laufe der Jahre kamen weitere Unterstützer und Freiwillige hinzu, und die Projekte erweiterten sich auf Bildung, Gesundheit und Umwelt.</p><p>Heute konzentrieren wir uns auf die Aufforstung von Enwen und die Förderung effizienter Kocher. Mit unserem aktuellen Projekt streben wir an, 1.000.000 Bäume zu pflanzen.</p></div>''')
+about += sec('Mission und Werte', 'Was uns leitet.', '''<div class="values">
+<div class="reveal"><h3>Bildung &amp; Gesundheit</h3><p>Unsere bisherigen Aktivitäten konzentrierten sich auf die Unterstützung von Bildung und Gesundheit. Wir haben Bildungsprogramme umgesetzt und die Lebensbedingungen vieler Menschen verbessert.</p></div>
+<div class="reveal"><h3>Umweltschutz</h3><p>Nun setzen wir einen neuen Schwerpunkt: Aufforstung, effiziente Kocher und Biogas sollen den Holzverbrauch senken und die Gesundheit der Gemeinschaften verbessern.</p></div>
+<div class="reveal"><h3>Gemeinsam vor Ort</h3><p>Wir arbeiten eng mit den Dorfbewohnern zusammen und entwickeln Lösungen, die zu ihren Bedürfnissen passen und langfristig tragen.</p></div></div>''', 'tint')
+about += sec('Menschen hinter NAHOW', 'Das Team', team)
+about += sec('Presse', 'NAHOW in den Medien', press, 'tint', 'Zeitungsausschnitte. Zum Vergrößern anklicken.')
+about += sec('Partnerschaften', 'Unsere Unterstützer und Sponsoren', '''<div class="prose narrow reveal"><p>Werden Sie Teil unserer Mission und unterstützen Sie unsere Baumprojekte in Kamerun! Als Sponsor haben Sie die Möglichkeit, sich auf nahow.de zu präsentieren und Ihren Beitrag für den Umweltschutz sichtbar zu machen. Ihr Firmenlogo binden wir mit Link zu Ihrer Website hier ein.</p><p>Wir informieren Sie gern ausführlich über die Möglichkeiten einer Sponsorschaft.</p>''' + arrow_link('Sponsorschaft anfragen', '/kontakt/') + '</div>', id_='partner')
+about += cta
+pages['/ueber-uns/'] = layout('Über NAHOW', 'Die Geschichte, die Werte und das Team von NAHOW e.V.', about, '/ueber-uns/')
+
+# ───────────────────────────── Berichte ─────────────────────────────
+
+
+def rep(file, title, meta):
+    href, size = doc(file)
+    return f'<a class="doc reveal" href="{href}" target="_blank" rel="noopener"><span class="doc-ico">PDF</span><span class="doc-body"><strong>{title}</strong><small>{meta} · {size}</small></span><span class="doc-go" aria-hidden="true">↗</span></a>'
+
+
+berichte = hero_intro('Transparenz', 'Berichte und Dokumente.', 'Was wir gebaut haben, was es gekostet hat und was wir gelernt haben: unsere Berichte stehen öffentlich zur Verfügung.')
+berichte += sec('Projektberichte', 'Abschlussberichte', '<div class="docs">' +
+                rep('projektendbericht_schule.pdf', 'Projektendbericht Schule', 'August 2010 · Wiederaufbau der Grundschule') +
+                rep('projektendbericht_ausbildungszentrum.pdf', 'Projektendbericht Ausbildungszentrum', 'Mai 2012 · Schneiderei und Tischlerei') +
+                rep('projektbericht-solarzentrum.pdf', 'Projektendbericht Solarstrom für Enwen', 'März 2013 · Solarlampen und Toiletten') + '</div>')
+berichte += sec('Berichte und Briefe', 'Reisen, Lage und Bedarf', '<div class="docs">' +
+                rep('kamerunreisebericht-dec.-2013.pdf', 'Kamerun-Reisebericht', 'Dezember 2013') +
+                rep('Statusbericht-Nahow-2018.pdf', 'Statusbericht 2018', 'Februar 2018 · Lage in der Region') +
+                rep('Report-on-Enwai-Health-Centre.pdf', 'Need assessment of Ewai Health Centre', '2017 · englisch') + '</div>', 'tint')
+berichte += sec('Presse und Weiteres', 'Medien und Hintergrund', '<div class="docs">' +
+                rep('Pressemitteilung_Lichtblicke_Unterschleisheim.pdf', 'Pressemitteilung Lichtblicke Unterschleißheim', 'Benefizkonzert') +
+                rep('Hessnatur-Blog-12_07_05.pdf', 'Hessnatur-Blog', 'Artikel, Juli 2012') +
+                rep('U.S.-Department-of-State.pdf', 'U.S. Department of State: Cameroon 2017 Human Rights Report', 'englisch') + '</div>')
+pages['/berichte/'] = layout('Berichte', 'Projektberichte und Dokumente von NAHOW e.V.', berichte, '/berichte/')
+
+# ───────────────────────────── Unterstützen ─────────────────────────────
+support = hero_intro('Unterstützen', 'Gemeinsam mehr möglich machen.', 'Ob Spende, Partnerschaft oder ehrenamtliches Engagement: jede Form der Unterstützung hilft, die Arbeit in Enwen weiterzuführen.')
+support += sec('Spenden', 'Direkt an NAHOW e.V.', '''<div class="donate-grid"><div class="bank reveal"><span class="eyebrow">Banküberweisung</span><h3>Spendenkonto</h3><dl><dt>Kontoinhaber</dt><dd>NAHOW e.V.</dd><dt>IBAN</dt><dd class="mono">DE65 7001 0080 0849 5288 05</dd><dt>BIC</dt><dd>PBNKDEFF</dd><dt>Bank</dt><dd>Postbank</dd></dl></div><div class="donate-side reveal"><h3>Andere Wege, sich einzubringen</h3><p>Sie möchten NAHOW mit Know-how, Netzwerken oder einer Projektpartnerschaft unterstützen? Schreiben Sie uns über das Kontaktformular.</p><a class="btn btn-crimson" href="/kontakt/">Kontakt aufnehmen</a></div></div>''')
+support += f'''<section class="section tint"><div class="wrap split"><div class="split-photo reveal">{img("Nahow_Spenden-scaled", "Gedenktafel im gestifteten Klassenraum in Enwen", zoom=True)}</div><div class="split-text reveal"><span class="eyebrow">Wirkung vor Ort</span><h2>Ihre Unterstützung wird sichtbar.</h2><p>Spenderinnen und Spender werden in Enwen sichtbar gewürdigt. Im Klassenraum, den der Verein Lichtblicke stiftete, erinnert eine Tafel daran, wer ihn möglich gemacht hat.</p>{arrow_link("Projekte ansehen", "/projekte/")}</div></div></section>'''
+pages['/unterstuetzen/'] = layout('Unterstützen und spenden', 'NAHOW e.V. unterstützen: Spendenkonto, Partnerschaft und Engagement.', support, '/unterstuetzen/')
+
+# ───────────────────────────── Kontakt ─────────────────────────────
+contact = hero_intro('Kontakt', 'Schreiben Sie uns.', 'Für Fragen zu NAHOW, Projektideen, Unterstützung oder Presseanfragen.') + sec('Kontaktformular', 'Ihre Nachricht an NAHOW e.V.', '<div class="form-wrap"><form class="contact-form" action="/kontakt/senden.php" method="post"><div class="field"><label for="f-name">Name</label><input id="f-name" name="name" type="text" required maxlength="120" autocomplete="name"></div><div class="field"><label for="f-mail">Ihre E-Mail-Adresse</label><input id="f-mail" name="email" type="email" required maxlength="200" autocomplete="email"></div><div class="field"><label for="f-msg">Nachricht</label><textarea id="f-msg" name="message" rows="8" required maxlength="5000"></textarea></div><div class="hp" aria-hidden="true"><label>Bitte leer lassen<input name="website" type="text" tabindex="-1" autocomplete="off"></label></div><input type="hidden" name="ts" value="" id="f-ts"><label class="check"><input type="checkbox" name="consent" value="1" required> <span>Ich habe die <a href="/datenschutz/">Datenschutzerklärung</a> gelesen und bin damit einverstanden, dass meine Angaben zur Bearbeitung der Anfrage per E-Mail an NAHOW e.V. übermittelt werden.</span></label><button class="btn btn-crimson" type="submit">Nachricht senden</button></form></div>')
+pages['/kontakt/'] = layout('Kontakt', 'Kontaktieren Sie NAHOW e.V. über das Kontaktformular.', contact, '/kontakt/')
+pages['/kontakt/danke/'] = layout('Nachricht gesendet', 'Ihre Nachricht an NAHOW e.V. wurde gesendet.', hero_intro('Kontakt', 'Vielen Dank.', 'Ihre Nachricht wurde gesendet. Wir melden uns so bald wie möglich bei Ihnen.') + '<section class="section"><div class="wrap"><a class="btn btn-crimson" href="/">Zur Startseite</a></div></section>', '/kontakt/')
+pages['/kontakt/fehler/'] = layout('Nachricht nicht gesendet', 'Die Nachricht konnte nicht gesendet werden.', hero_intro('Kontakt', 'Das hat leider nicht geklappt.', 'Bitte prüfen Sie Ihre Angaben und versuchen Sie es erneut. Falls das Problem bleibt, versuchen Sie es später noch einmal.') + '<section class="section"><div class="wrap"><a class="btn btn-crimson" href="/kontakt/">Zurück zum Formular</a></div></section>', '/kontakt/')
+
+# ───────────────────────────── Rechtliches ─────────────────────────────
+
+
+def _paras(path, start, stop):
+    L = [l.strip() for l in (R / path).read_text(encoding='utf-8').split('\n')]
+    return L[start:stop]
+
+
 def _render(lines):
- return ''.join('<p>'+_h.escape(l)+'</p>' for l in lines if l)
+    return ''.join('<p>' + _h.escape(l) + '</p>' for l in lines if l)
+
+
 def _block(lines):
- return '<p>'+'<br>'.join(_h.escape(l).replace('(at)','@') for l in lines if l)+'</p>'
+    return '<p>' + '<br>'.join(_h.escape(l).replace('(at)', '@') for l in lines if l) + '</p>'
+
+
 def _imp_html():
- L=_paras('tools/legal/impressum-original.txt',0,100)
- return _block(L[1:6])+'<p>Kontakt: <a href="/kontakt/">Zum Kontaktformular</a></p>'+_block(L[8:10])+_block([L[10]])+'<h3>'+_h.escape(L[11])+'</h3>'+_render([L[12]])+'<h3>'+_h.escape(L[13])+'</h3>'+_render([L[14]])
+    L = _paras('tools/legal/impressum-original.txt', 0, 100)
+    return (_block(L[1:6]) + '<p>Kontakt: <a href="/kontakt/">Zum Kontaktformular</a></p>' + _block(L[8:10]) + _block([L[10]])
+            + '<h3>' + _h.escape(L[11]) + '</h3>' + _render([L[12]]) + '<h3>' + _h.escape(L[13]) + '</h3>' + _render([L[14]]))
+
+
 def _dsg_html():
- L=_paras('tools/legal/datenschutz-original.txt',0,100)
- s=_render(L[1:4])+'<h3>I. Informationen über uns als Verantwortliche</h3>'+_render([L[9]])+_block([l for l in L[10:17] if not l.startswith(('Telefon','E-Mail'))])+'<p>Kontakt: <a href="/kontakt/">Zum Kontaktformular</a></p>'
- s+='<h3>II. Rechte der Nutzer und Betroffenen</h3>'+_render(L[18:26])
- return s
-legal=intro('Rechtliches','Impressum.','Angaben gemäß den gesetzlichen Informationspflichten.')+section('Anbieter','NAHOW e.V.','<div class="narrow prose">'+_imp_html()+'</div>')
-pages['/impressum/']=layout('Impressum','Impressum und Kontaktangaben von NAHOW e.V.',legal, '/impressum/')
-dsg=_paras('tools/legal/datenschutz-original.txt',1,26)
-dsg=[l for l in dsg if not re.match(r'^(Unsere Datenschutzerkl|III\. Informationen)',l) and l not in ('I. Informationen über uns als Verantwortliche','II. Rechte der Nutzer und Betroffenen') or False]
-privacy=intro('Datenschutz','Datenschutzerklärung.','Informationen zur Verarbeitung personenbezogener Daten.')+section('Hinweise','Datenschutz im Blick','<div class="narrow prose">'+_dsg_html()+'<h3>III. Informationen zur Datenverarbeitung auf dieser Website</h3><p>Diese Website ist statisch aufgebaut. Sie verwendet keine Cookies, keine Analyse- oder Trackingdienste, keine Nutzerkonten und lädt keine Schriftarten, Karten oder Videos von Drittanbietern. Beim Aufruf verarbeitet der Hostinganbieter technisch notwendige Zugriffsdaten (z. B. IP-Adresse, Datum und Uhrzeit, aufgerufene Seite) in Server-Logdateien, um den Betrieb und die Sicherheit der Website zu gewährleisten (Art. 6 Abs. 1 lit. f DSGVO).</p><p>Wenn Sie das Kontaktformular nutzen, werden Ihr Name, Ihre E-Mail-Adresse und Ihre Nachricht per E-Mail an den Verein übermittelt und ausschließlich zur Bearbeitung Ihrer Anfrage verwendet (Art. 6 Abs. 1 lit. b bzw. f DSGVO). Die Angaben werden nicht auf dem Server gespeichert und nicht an Dritte weitergegeben.</p></div>')
-pages['/datenschutz/']=layout('Datenschutz','Vorläufige Datenschutzhinweise zur statischen NAHOW-Website.',privacy, '/datenschutz/')
-# Build static pages. Legacy URL rules are maintained in the separately supplied .htaccess template.
-for path,doc in pages.items():
- out=R / path.strip('/') / 'index.html' if path!='/' else R/'index.html';out.parent.mkdir(parents=True,exist_ok=True);out.write_text(doc,encoding='utf-8')
-(R/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>https://nahow.de{p}</loc></url>' for p in pages)+'</urlset>',encoding='utf-8')
-(R/'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: https://nahow.de/sitemap.xml\n',encoding='utf-8')
-print('Generated',len(pages),'pages;',len(photo_urls),'unchanged originals available')
+    L = _paras('tools/legal/datenschutz-original.txt', 0, 100)
+    s = _render(L[1:4]) + '<h3>I. Informationen über uns als Verantwortliche</h3>' + _render([L[9]])
+    s += _block([l for l in L[10:17] if not l.startswith(('Telefon', 'E-Mail'))]) + '<p>Kontakt: <a href="/kontakt/">Zum Kontaktformular</a></p>'
+    s += '<h3>II. Rechte der Nutzer und Betroffenen</h3>' + _render(L[18:26])
+    return s
+
+
+pages['/impressum/'] = layout('Impressum', 'Impressum und Anbieterkennzeichnung von NAHOW e.V.',
+                              hero_intro('Rechtliches', 'Impressum.', 'Angaben gemäß den gesetzlichen Informationspflichten.') + sec('Anbieter', 'NAHOW e.V.', '<div class="prose narrow">' + _imp_html() + '</div>'), '/impressum/')
+pages['/datenschutz/'] = layout('Datenschutz', 'Datenschutzerklärung von NAHOW e.V.',
+                                hero_intro('Datenschutz', 'Datenschutzerklärung.', 'Informationen zur Verarbeitung personenbezogener Daten.') + sec('Hinweise', 'Datenschutz im Blick', '<div class="prose narrow">' + _dsg_html() + '<h3>III. Informationen zur Datenverarbeitung auf dieser Website</h3><p>Diese Website ist statisch aufgebaut. Sie verwendet keine Cookies, keine Analyse- oder Trackingdienste, keine Nutzerkonten und lädt keine Schriftarten, Karten oder Videos von Drittanbietern. Beim Aufruf verarbeitet der Hostinganbieter technisch notwendige Zugriffsdaten (z. B. IP-Adresse, Datum und Uhrzeit, aufgerufene Seite) in Server-Logdateien, um den Betrieb und die Sicherheit der Website zu gewährleisten (Art. 6 Abs. 1 lit. f DSGVO).</p><p>Wenn Sie das Kontaktformular nutzen, werden Ihr Name, Ihre E-Mail-Adresse und Ihre Nachricht per E-Mail an den Verein übermittelt und ausschließlich zur Bearbeitung Ihrer Anfrage verwendet (Art. 6 Abs. 1 lit. b bzw. f DSGVO). Die Angaben werden nicht auf dem Server gespeichert und nicht an Dritte weitergegeben.</p></div>'), '/datenschutz/')
+
+# ───────────────────────────── Einblicke (zuletzt: bekommt alle übrigen Fotos) ─────────────────────────────
+SKIP = ('DSC_0004', 'DSC_0340', 'DSC_0471', 'DSC_0482', 'DSC_0535', 'shield_', 'Footballfield', 'Tafel', 'P1040905',
+        'Kinder1', '100_5729', 'IMG_1241', 'IMG_1242', 'Africa-map', 'Generalanzeiger', 'Nahow_Presse', 'Nahow_Spenden',
+        'nahow_image_collage', 'Spende_Sekundarschule')
+names = [k for k in sorted(WEB) if k not in used and not any(s in k for s in SKIP)]
+masonry = ''.join(f'<figure class="g-item">{img(k, "Foto aus Enwen, Kamerun", zoom=True)}</figure>' for k in names)
+gal = hero_intro('Einblicke', 'Momente aus Enwen.', 'Fotos aus den Projekten und dem Alltag vor Ort. Zum Vergrößern anklicken.') + f'<section class="section"><div class="wrap"><div class="masonry">{masonry}</div></div></section>'
+pages['/einblicke/'] = layout('Einblicke und Fotos', 'Fotos aus den Projekten von NAHOW e.V. in Enwen, Kamerun.', gal, '/einblicke/')
+
+for path, d in pages.items():
+    out = R / path.strip('/') / 'index.html' if path != '/' else R / 'index.html'
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(d, encoding='utf-8')
+(R / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + ''.join(
+    f'<url><loc>https://nahow.de{p}</loc></url>' for p in pages if p not in ('/kontakt/danke/', '/kontakt/fehler/')) + '</urlset>', encoding='utf-8')
+(R / 'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: https://nahow.de/sitemap.xml\n', encoding='utf-8')
+print('Generated', len(pages), 'pages;', len(used), 'distinct photos used, none repeated;', len(names), 'in gallery')
