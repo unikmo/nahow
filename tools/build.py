@@ -45,9 +45,27 @@ support=intro('Unterstützen','Gemeinsam mehr möglich machen.','Ob Spende, Part
 pages['/unterstuetzen/']=layout('Unterstützen und spenden','NAHOW e.V. unterstützen: Spendenkonto, Partnerschaft und Engagement.',support,'/unterstuetzen/')
 contact=intro('Kontakt','Wir freuen uns auf Ihre Nachricht.','Für Fragen zu NAHOW, Projektideen, Unterstützung oder Presseanfragen.')+section('Direkt erreichbar','Kontaktieren Sie uns.','''<div class="contact-grid"><div><h3>NAHOW e.V.</h3><p>c/o Tichi Mbanwie<br>Im Rothenbruch 33<br>53721 Siegburg<br>Deutschland</p><p><a href="mailto:mail@nahow.de">mail@nahow.de</a><br><a href="tel:+491634668380">+49 163 466 8380</a></p></div><div class="contact-note"><h3>Persönlich und ohne Formular.</h3><p>Wir nutzen bewusst eine direkte E-Mail-Verbindung. So benötigen wir für das Kontaktformular keine Datenbank oder externe Formulardienste.</p><a class="btn btn-green" href="mailto:mail@nahow.de?subject=Anfrage%20%C3%BCber%20nahow.de">E-Mail schreiben ↗</a></div></div>''')
 pages['/kontakt/']=layout('Kontakt','Kontaktieren Sie NAHOW e.V. in Siegburg.',contact,'/kontakt/')
-legal=intro('Rechtliches','Impressum.','Angaben gemäß bisherigem veröffentlichtem Impressum.')+section('Anbieter','NAHOW e.V.','''<div class="narrow prose"><p>NAHOW e.V.<br>c/o Tichi Mbanwie<br>Im Rothenbruch 33<br>53721 Siegburg<br>Deutschland</p><p>Telefon: <a href="tel:+491634668380">+49 163 466 8380</a><br>E-Mail: <a href="mailto:mail@nahow.de">mail@nahow.de</a></p><p>Steuernummer: 222/5743/0601<br>Vereinsregisternummer: 201819</p><p>Inhaltlich verantwortlich: Tichi Mbanwie</p><p class="small-note">Angaben aus der bestehenden Website übernommen. Vor Veröffentlichung auf Aktualität und gesetzliche Pflichtangaben prüfen.</p></div>''')
+import html as _h
+def _paras(path,start,stop):
+ L=[l.strip() for l in (R/path).read_text(encoding='utf-8').split('\n')]
+ return L[start:stop]
+def _render(lines):
+ return ''.join('<p>'+_h.escape(l)+'</p>' for l in lines if l)
+def _block(lines):
+ return '<p>'+'<br>'.join(_h.escape(l).replace('(at)','@') for l in lines if l)+'</p>'
+def _imp_html():
+ L=_paras('tools/legal/impressum-original.txt',0,100)
+ return _block(L[1:10])+_block([L[10]])+'<h3>'+_h.escape(L[11])+'</h3>'+_render([L[12]])+'<h3>'+_h.escape(L[13])+'</h3>'+_render([L[14]])
+def _dsg_html():
+ L=_paras('tools/legal/datenschutz-original.txt',0,100)
+ s=_render(L[1:4])+'<h3>I. Informationen über uns als Verantwortliche</h3>'+_render([L[9]])+_block(L[10:17])
+ s+='<h3>II. Rechte der Nutzer und Betroffenen</h3>'+_render(L[18:26])
+ return s
+legal=intro('Rechtliches','Impressum.','Angaben aus dem bisherigen Impressum, unverändert übernommen.')+section('Anbieter','NAHOW e.V.','<div class="narrow prose">'+_imp_html()+'</div>')
 pages['/impressum/']=layout('Impressum','Impressum und Kontaktangaben von NAHOW e.V.',legal, '/impressum/')
-privacy=intro('Datenschutz','Datenschutzhinweise.','Informationen zur Verarbeitung personenbezogener Daten auf dieser statischen Website.')+section('Hinweise','Datenschutz im Blick','''<div class="narrow prose"><p>Verantwortlich: NAHOW e.V., c/o Tichi Mbanwie, Im Rothenbruch 33, 53721 Siegburg, E-Mail: mail@nahow.de.</p><p>Die neue statische Website sieht selbst keine Nutzerkonten, Analysewerkzeuge, extern geladenen Schriftarten oder Tracking-Cookies vor. Beim Besuch können durch den Hostinganbieter technische Zugriffsdaten (z. B. IP-Adresse, Zeitpunkt und angeforderte Seite) in Serverprotokollen verarbeitet werden. Details zu Zweck, Rechtsgrundlage, Speicherdauer und Auftragsverarbeitung müssen anhand des HostEurope-Vertrags geprüft und ergänzt werden.</p><p>Per E-Mail übermittelte Anfragen werden zur Bearbeitung der Anfrage verarbeitet. Betroffene haben nach Maßgabe der DSGVO insbesondere Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch und Beschwerde bei einer Datenschutzaufsichtsbehörde.</p><p><strong>Vor Veröffentlichung rechtlich vervollständigen:</strong> Angaben zu Server-Logs, Hostingdienstleister, Speicherfristen, Rechtsgrundlagen, Empfängern, ggf. internationalen Übermittlungen und Kontaktdaten der zuständigen Aufsichtsbehörde.</p></div>''')
+dsg=_paras('tools/legal/datenschutz-original.txt',1,26)
+dsg=[l for l in dsg if not re.match(r'^(Unsere Datenschutzerkl|III\. Informationen)',l) and l not in ('I. Informationen über uns als Verantwortliche','II. Rechte der Nutzer und Betroffenen') or False]
+privacy=intro('Datenschutz','Datenschutzerklärung.','Informationen zur Verarbeitung personenbezogener Daten.')+section('Hinweise','Datenschutz im Blick','<div class="narrow prose">'+_dsg_html()+'<h3>III. Informationen zur Datenverarbeitung auf dieser Website</h3><p>Diese Website ist statisch aufgebaut. Sie verwendet keine Cookies, keine Analyse- oder Trackingdienste, keine Nutzerkonten und lädt keine Schriftarten, Karten oder Videos von Drittanbietern. Beim Aufruf verarbeitet der Hostinganbieter technisch notwendige Zugriffsdaten (z. B. IP-Adresse, Datum und Uhrzeit, aufgerufene Seite) in Server-Logdateien, um den Betrieb und die Sicherheit der Website zu gewährleisten (Art. 6 Abs. 1 lit. f DSGVO).</p><p>Anfragen per E-Mail an mail@nahow.de werden ausschließlich zur Bearbeitung der Anfrage verarbeitet (Art. 6 Abs. 1 lit. b bzw. f DSGVO).</p><p class="small-note">Die Abschnitte I und II sind aus der bisherigen Datenschutzerklärung übernommen; Abschnitt III wurde an die neue Website angepasst und sollte vom Verein rechtlich geprüft werden.</p></div>')
 pages['/datenschutz/']=layout('Datenschutz','Vorläufige Datenschutzhinweise zur statischen NAHOW-Website.',privacy, '/datenschutz/')
 # Build static pages. Legacy URL rules are maintained in the separately supplied .htaccess template.
 for path,doc in pages.items():
