@@ -15,7 +15,7 @@ for page in pages:
  if not c.has_title or not c.has_main:errors.append(f'Invalid layout in {page}')
  for link in c.links:
   path=link.split('#')[0].split('?')[0];target=R/(path.strip('/'))/'index.html' if path!='/' else R/'index.html'
-  if not target.exists():errors.append(f'Broken navigation: {page}: {link}')
+  if not target.exists() and not (R/path.strip('/')).is_file():errors.append(f'Broken navigation: {page}: {link}')
  for src in c.images:
   if src.startswith('/') and not (R/src.strip('/')).exists():errors.append(f'Missing original image: {src}')
 for f in ('robots.txt','sitemap.xml','assets/site.css','assets/site.js'):
