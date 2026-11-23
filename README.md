@@ -1,6 +1,6 @@
 # NAHOW e.V. — website rebuild
 
-**Status: preview package prepared; not deployed.** Existing `nahow.de` remains hosted at HostEurope.
+**Status: preview source committed on `preview/website-rebuild`; not deployed.** Existing `nahow.de` remains hosted at HostEurope.
 
 ## Architecture
 
@@ -19,4 +19,4 @@
 
 ## Source status
 
-The preview ZIP exists as a conversation artifact but has **not** been committed to this repository yet. Do not run automated deployment from this branch. The complete source must be transferred into this repository, tested, and reviewed before release.
+The website source, build and verification scripts are committed to this preview branch. The original photographs and project documents remain unimported. Production deployment is disabled pending secure HostEurope access, full backup, photo/report migration, visual review, and release verification.
