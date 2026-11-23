@@ -1,0 +1,16 @@
+# NAHOW static site. Scoped to nahow.de only: this file sits above other domains' folders.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTP_HOST} !^(www\.)?nahow\.de$ [NC]
+RewriteRule ^ - [S=8]
+RewriteCond %{HTTP_HOST} ^www\.nahow\.de$ [NC]
+RewriteRule ^(.*)$ https://nahow.de/$1 [R=301,L]
+RewriteRule ^wp-content/uploads/.*/([^/]+\.pdf)$ /assets/documents/$1 [R=301,L,NC]
+RewriteRule ^fotos/?$ /einblicke/ [R=301,L]
+RewriteRule ^(aktuelle-projekte|abgeschlossene-projekte)/?$ /projekte/ [R=301,L]
+RewriteRule ^(projekte/)?aufforstungsprojekt/?$ /projekte/#umwelt [R=301,L,NE]
+RewriteCond %{REQUEST_URI} !/index\.html$
+RewriteRule ^projekte/[^/]+/?$ /projekte/ [R=301,L]
+RewriteRule ^(team|geschichte|mission-und-werte|partnerschaften|presse)/?$ /ueber-uns/ [R=301,L]
+RewriteRule ^datenschutzerklarung/?$ /datenschutz/ [R=301,L]
+</IfModule>
