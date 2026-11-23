@@ -223,3 +223,13 @@ p{margin:0 0 1em}
 .strip figure.wide{grid-column:span 2}.strip figure.wide img{aspect-ratio:1.53;object-fit:cover;object-position:center}@media(max-width:760px){.strip figure.wide img{aspect-ratio:3/2;height:auto}}
 
 .strip{grid-template-columns:repeat(3,1fr)}@media(max-width:760px){.strip{grid-template-columns:1fr 1fr}}
+
+.contact-page{padding:44px 0 40px}.contact-page h1{margin:6px 0 22px}
+.contact-page .form-wrap,.contact-page .contact-form{max-width:760px}
+.contact-page .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.contact-page .field{margin-bottom:14px}.contact-page label{margin-bottom:4px;font-size:14px}
+.contact-page input[type=text],.contact-page input[type=email],.contact-page textarea{padding:10px 12px}
+.contact-page textarea{resize:vertical;min-height:96px}
+.contact-page .send-row{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.contact-page .check{margin:0;font-size:13px;line-height:1.5}
+@media(max-width:760px){.contact-page .row2,.contact-page .send-row{grid-template-columns:1fr}.contact-page .btn{width:100%}}
