@@ -221,3 +221,5 @@ p{margin:0 0 1em}
 .strip{grid-template-columns:repeat(4,1fr)}.strip img.pos-r{object-position:100% 20%}@media(max-width:760px){.strip{grid-template-columns:1fr 1fr}}
 
 .strip figure.wide{grid-column:span 2}.strip figure.wide img{aspect-ratio:1.53;object-fit:cover;object-position:center}@media(max-width:760px){.strip figure.wide img{aspect-ratio:3/2;height:auto}}
+
+.strip{grid-template-columns:repeat(3,1fr)}@media(max-width:760px){.strip{grid-template-columns:1fr 1fr}}

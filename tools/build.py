@@ -189,7 +189,6 @@ about += sec('Mission und Werte', 'Was uns leitet.', '''<div class="values">
 <div class="reveal"><h3>Gemeinsam vor Ort</h3><p>Wir arbeiten eng mit den Dorfbewohnern zusammen und entwickeln Lösungen, die zu ihren Bedürfnissen passen und langfristig tragen.</p></div></div>''', 'tint')
 culture = '<div class="strip">' + ''.join(f'<figure class="reveal{" wide" if c == "wide" else ""}">{img(n, a, c, zoom=True)}</figure>' for n, a, c in [
     ('DSC_0723_Enwen-scaled', 'Gruppenbild in traditioneller Festkleidung in Enwen', 'wide'),
-    ('DSC_0469_Enwen-scaled', 'Lächelnder Mann in traditioneller Kleidung', ''),
     ('DSC_0477_Enwen', 'Traditionelle Kleidung und Kopfbedeckung in Enwen', ''),
 ]) + '</div>'
 about += sec('Kultur', 'Enwen: Menschen und Traditionen', culture, 'tint', 'Festliche Kleidung und Kopfbedeckungen gehören zum Alltag und zu den Feiern im Dorf. Zum Vergrößern anklicken.')
@@ -272,7 +271,7 @@ pages['/impressum/'] = layout('Impressum', 'Impressum und Anbieterkennzeichnung 
 pages['/datenschutz/'] = layout('Datenschutz', 'Datenschutzerklärung von NAHOW e.V.', legal_page('Datenschutz', 'Datenschutzerklärung', _dsg_html() + '''<h3>III. Informationen zur Datenverarbeitung auf dieser Website</h3><p>Diese Website ist statisch aufgebaut. Sie verwendet keine Cookies, keine Analyse- oder Trackingdienste, keine Nutzerkonten und lädt keine Schriftarten, Karten oder Videos von Drittanbietern. Beim Aufruf verarbeitet der Hostinganbieter technisch notwendige Zugriffsdaten (z. B. IP-Adresse, Datum und Uhrzeit, aufgerufene Seite) in Server-Logdateien, um den Betrieb und die Sicherheit der Website zu gewährleisten (Art. 6 Abs. 1 lit. f DSGVO).</p><p>Wenn Sie das Kontaktformular nutzen, werden Ihr Name, Ihre E-Mail-Adresse und Ihre Nachricht per E-Mail an den Verein übermittelt und ausschließlich zur Bearbeitung Ihrer Anfrage verwendet (Art. 6 Abs. 1 lit. b bzw. f DSGVO). Die Angaben werden nicht auf dem Server gespeichert und nicht an Dritte weitergegeben.</p>'''), '/datenschutz/')
 
 # ───────────────────────────── Einblicke (zuletzt: bekommt alle übrigen Fotos) ─────────────────────────────
-SKIP = ('DSC_0322', 'althof', 'vyvian', 'DSC_0004', 'DSC_0340', 'DSC_0471', 'DSC_0482', 'DSC_0535', 'shield_', 'Footballfield', 'Tafel', 'P1040905',
+SKIP = ('DSC_0322', 'DSC_0469', 'althof', 'vyvian', 'DSC_0004', 'DSC_0340', 'DSC_0471', 'DSC_0482', 'DSC_0535', 'shield_', 'Footballfield', 'Tafel', 'P1040905',
         'Kinder1', '100_5729', 'IMG_1241', 'IMG_1242', 'Africa-map', 'Generalanzeiger', 'Nahow_Presse', 'Nahow_Spenden',
         'nahow_image_collage', 'Spende_Sekundarschule')
 names = [k for k in sorted(WEB) if k not in used and not any(s in k for s in SKIP)]
