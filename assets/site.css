@@ -5,3 +5,12 @@
 .photo img,.project-row>img,.story-photo img{object-position:center 30%}
 .story-photo.wide{height:420px}
 .photo img{background:#e8eee9}
+
+.form-wrap{max-width:680px}
+.contact-form .field{margin-bottom:20px}
+.contact-form label{display:block;font-weight:600;margin-bottom:6px}
+.contact-form input[type=text],.contact-form input[type=email],.contact-form textarea{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:var(--radius);font:inherit;background:#fff;color:var(--ink)}
+.contact-form input:focus,.contact-form textarea:focus{outline:2px solid var(--pine);outline-offset:1px}
+.contact-form .check{display:flex;gap:10px;align-items:flex-start;font-weight:400;margin-bottom:22px;color:var(--muted);font-size:14px;line-height:1.6}
+.contact-form .check input{margin-top:5px}
+.hp{position:absolute;left:-9999px;height:0;overflow:hidden}

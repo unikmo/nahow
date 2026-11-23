@@ -1,1 +1,3 @@
 const button=document.querySelector('.menu-toggle');const nav=document.querySelector('.nav');if(button&&nav){button.addEventListener('click',()=>{const opened=button.getAttribute('aria-expanded')==='true';button.setAttribute('aria-expanded',String(!opened));button.setAttribute('aria-label',opened?'Menü öffnen':'Menü schließen');nav.classList.toggle('open',!opened)});nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{button.setAttribute('aria-expanded','false');nav.classList.remove('open')}));}
+
+;(function(){var t=document.getElementById('f-ts');if(t)t.value=Math.floor(Date.now()/1000)})();
