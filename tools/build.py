@@ -65,7 +65,7 @@ def arrow_link(text, href, cls='link-arrow'):
 pages = {}
 
 # ───────────────────────────── Startseite ─────────────────────────────
-hero = f'''<section class="hero"><div class="hero-text"><span class="eyebrow light">Enwen · Nordwest-Kamerun</span><h1>Veränderung beginnt vor Ort.</h1><p>Seit 2008 engagiert sich NAHOW e.V. gemeinsam mit den Menschen in Enwen für Bildung, Gesundheit, bessere Lebensgrundlagen und eine nachhaltigere Zukunft.</p><div class="actions"><a class="btn btn-crimson" href="/projekte/">Unsere Projekte</a><a class="btn btn-ghost" href="/unterstuetzen/">Spenden</a></div></div><div class="hero-photo">{img("DSC_0857_Enwen-scaled", "Lachendes Kind in Enwen, Kamerun", eager=True)}</div></section>'''
+hero = f'''<section class="hero"><div class="hero-text"><span class="eyebrow light">Enwen · Nordwest-Kamerun</span><h1>Veränderung beginnt vor Ort.</h1><p>Seit 2008 engagiert sich NAHOW e.V. gemeinsam mit den Menschen in Enwen für Bildung, Gesundheit, bessere Lebensgrundlagen und eine nachhaltigere Zukunft.</p><div class="actions"><a class="btn btn-crimson" href="/projekte/">Unsere Projekte</a><a class="btn btn-ghost" href="/unterstuetzen/">Spenden</a></div></div><div class="hero-photo">{img("DSC_0495_Enwen-scaled", "Lachendes Kind in Enwen, Kamerun", eager=True)}</div></section>'''
 
 facts = '''<section class="facts"><div class="wrap facts-grid">
 <div><b>2008</b><span>Gründung des Vereins</span></div>
@@ -184,6 +184,13 @@ about += sec('Mission und Werte', 'Was uns leitet.', '''<div class="values">
 <div class="reveal"><h3>Bildung &amp; Gesundheit</h3><p>Unsere bisherigen Aktivitäten konzentrierten sich auf die Unterstützung von Bildung und Gesundheit. Wir haben Bildungsprogramme umgesetzt und die Lebensbedingungen vieler Menschen verbessert.</p></div>
 <div class="reveal"><h3>Umweltschutz</h3><p>Nun setzen wir einen neuen Schwerpunkt: Aufforstung, effiziente Kocher und Biogas sollen den Holzverbrauch senken und die Gesundheit der Gemeinschaften verbessern.</p></div>
 <div class="reveal"><h3>Gemeinsam vor Ort</h3><p>Wir arbeiten eng mit den Dorfbewohnern zusammen und entwickeln Lösungen, die zu ihren Bedürfnissen passen und langfristig tragen.</p></div></div>''', 'tint')
+culture = '<div class="strip">' + ''.join(f'<figure class="reveal">{img(n, a, zoom=True)}</figure>' for n, a in [
+    ('DSC_0456_Enwen-scaled', 'Traditionelle Festkleidung in Enwen'),
+    ('DSC_0468_Enwen', 'Festlich gekleideter Mann in Enwen'),
+    ('DSC_0469_Enwen-scaled', 'Lächelnder Mann in traditioneller Kleidung'),
+    ('DSC_0477_Enwen', 'Traditionelle Kleidung und Kopfbedeckung in Enwen'),
+]) + '</div>'
+about += sec('Kultur', 'Enwen: Menschen und Traditionen', culture, 'tint', 'Festliche Kleidung und Kopfbedeckungen gehören zum Alltag und zu den Feiern im Dorf. Zum Vergrößern anklicken.')
 about += sec('Menschen hinter NAHOW', 'Das Team', team)
 about += sec('Presse', 'NAHOW in den Medien', press, 'tint', 'Zeitungsausschnitte. Zum Vergrößern anklicken.')
 about += sec('Partnerschaften', 'Unsere Unterstützer und Sponsoren', '''<div class="prose narrow reveal"><p>Werden Sie Teil unserer Mission und unterstützen Sie unsere Baumprojekte in Kamerun! Als Sponsor haben Sie die Möglichkeit, sich auf nahow.de zu präsentieren und Ihren Beitrag für den Umweltschutz sichtbar zu machen. Ihr Firmenlogo binden wir mit Link zu Ihrer Website hier ein.</p><p>Wir informieren Sie gern ausführlich über die Möglichkeiten einer Sponsorschaft.</p>''' + arrow_link('Sponsorschaft anfragen', '/kontakt/') + '</div>', id_='partner')
@@ -263,7 +270,7 @@ pages['/impressum/'] = layout('Impressum', 'Impressum und Anbieterkennzeichnung 
 pages['/datenschutz/'] = layout('Datenschutz', 'Datenschutzerklärung von NAHOW e.V.', legal_page('Datenschutz', 'Datenschutzerklärung', _dsg_html() + '''<h3>III. Informationen zur Datenverarbeitung auf dieser Website</h3><p>Diese Website ist statisch aufgebaut. Sie verwendet keine Cookies, keine Analyse- oder Trackingdienste, keine Nutzerkonten und lädt keine Schriftarten, Karten oder Videos von Drittanbietern. Beim Aufruf verarbeitet der Hostinganbieter technisch notwendige Zugriffsdaten (z. B. IP-Adresse, Datum und Uhrzeit, aufgerufene Seite) in Server-Logdateien, um den Betrieb und die Sicherheit der Website zu gewährleisten (Art. 6 Abs. 1 lit. f DSGVO).</p><p>Wenn Sie das Kontaktformular nutzen, werden Ihr Name, Ihre E-Mail-Adresse und Ihre Nachricht per E-Mail an den Verein übermittelt und ausschließlich zur Bearbeitung Ihrer Anfrage verwendet (Art. 6 Abs. 1 lit. b bzw. f DSGVO). Die Angaben werden nicht auf dem Server gespeichert und nicht an Dritte weitergegeben.</p>'''), '/datenschutz/')
 
 # ───────────────────────────── Einblicke (zuletzt: bekommt alle übrigen Fotos) ─────────────────────────────
-SKIP = ('DSC_0004', 'DSC_0340', 'DSC_0471', 'DSC_0482', 'DSC_0535', 'shield_', 'Footballfield', 'Tafel', 'P1040905',
+SKIP = ('DSC_0322', 'DSC_0004', 'DSC_0340', 'DSC_0471', 'DSC_0482', 'DSC_0535', 'shield_', 'Footballfield', 'Tafel', 'P1040905',
         'Kinder1', '100_5729', 'IMG_1241', 'IMG_1242', 'Africa-map', 'Generalanzeiger', 'Nahow_Presse', 'Nahow_Spenden',
         'nahow_image_collage', 'Spende_Sekundarschule')
 names = [k for k in sorted(WEB) if k not in used and not any(s in k for s in SKIP)]

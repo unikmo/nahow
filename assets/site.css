@@ -210,3 +210,5 @@ p{margin:0 0 1em}
 }
 
 .legal{padding-top:72px}.legal .sec-head{margin-bottom:32px}
+
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.strip figure{margin:0}.strip img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:var(--r);cursor:zoom-in}@media(max-width:760px){.strip{grid-template-columns:1fr 1fr}}
